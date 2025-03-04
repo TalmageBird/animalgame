@@ -115,7 +115,9 @@ fun AnimalGameGreetingScreen(navController: NavController) {
             text = "Welcome $name, to the Animal Game!",
             fontSize = 24.sp,
             fontWeight = FontWeight.Bold,
-            color = Color.Black
+            color = Color.Black,
+            textAlign = TextAlign.Center,
+            modifier = Modifier.fillMaxWidth() // Ensures text is centered properly
         )
 
         Spacer(modifier = Modifier.height(8.dp))
@@ -1135,10 +1137,9 @@ fun LoginScreen(navController: NavController) {
                 painter = painterResource(id = R.drawable.animalgamelogo),
                 contentDescription = "Animal Game Logo",
                 modifier = Modifier
-                    .size(150.dp)
+                    .size(200.dp)
                     .clip(CircleShape)
                     .background(Color.LightGray)
-                    .padding(8.dp)
             )
 
             Spacer(modifier = Modifier.height(32.dp))
