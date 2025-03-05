@@ -51,6 +51,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.Divider
 import androidx.compose.material3.MaterialTheme
 import androidx.navigation.NavType
@@ -63,6 +64,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.material.icons.filled.Email
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.ShoppingCart
 import androidx.compose.material3.*
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.text.SpanStyle
@@ -82,6 +84,9 @@ import androidx.navigation.NavController
 import androidx.navigation.NavHostController
 
 var name = "Guest"
+val avatarOptions = mutableListOf(
+    R.drawable.tiger, R.drawable.parrot, R.drawable.monkey, R.drawable.elephant
+)
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -96,32 +101,6 @@ class MainActivity : ComponentActivity() {
 
 @Composable
 fun AnimalGameGreetingScreen(navController: NavController) {
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(Color(ContextCompat.getColor(LocalContext.current, R.color.safari_light_brown)))
-    ) {
-        // Box for Back Button
-        Box(
-            modifier = Modifier
-                .align(Alignment.TopStart) // Align the back button to the top-left corner
-                .padding(top = 1.dp) // Padding for positioning the icon at the top-left
-        ) {
-            IconButton(
-                onClick = { navController.navigate("store") },  // Back to the previous screen
-                modifier = Modifier
-                    .padding(top = 16.dp) // Padding for positioning the icon at the top-left
-                    .align(Alignment.TopStart) // Align the back button to the top-left corner
-                    .size(48.dp) // Set a fixed size for the icon button
-            ) {
-                Icon(
-                    imageVector = Icons.Default.ArrowBack,
-                    contentDescription = "Back",
-                    tint = Color.Black
-                )
-            }
-        }
-    }
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -130,6 +109,25 @@ fun AnimalGameGreetingScreen(navController: NavController) {
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
+        // Store Button in the top left
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            IconButton(
+                onClick = { navController.navigate("store") },
+                modifier = Modifier
+            ) {
+                Icon(
+                    imageVector = Icons.Default.ShoppingCart,
+                    contentDescription = "Go to Store",
+                    tint = Color.Black,
+                    modifier = Modifier.size(32.dp)
+                )
+            }
+            Spacer(modifier = Modifier.width(1.dp)) // Placeholder to balance the row
+        }
+        // Rest of the existing code remains the same
         // Game Logo
         Image(
             painter = painterResource(id = R.drawable.animalgamelogo),
@@ -879,9 +877,9 @@ fun GamePlay(navController: NavController, letter: Char, numPlayers: Int) {
     var feedbackMessage by remember { mutableStateOf<String?>(null) }
     var lastGuesses by remember { mutableStateOf(listOf<Pair<String, Boolean>>()) }
 
-    val avatarOptions = listOf(
-        R.drawable.tiger, R.drawable.parrot, R.drawable.monkey, R.drawable.elephant
-    )
+    //val avatarOptions = listOf(
+        //R.drawable.tiger, R.drawable.parrot, R.drawable.monkey, R.drawable.elephant
+    //)
 
     Column(
         modifier = Modifier
@@ -1311,7 +1309,7 @@ fun LoginScreen(navController: NavController) {
 
             // Guest Mode
             TextButton(
-                onClick = { name = "guest"; navController.navigate("greeting") },
+                onClick = { name = "Guest"; navController.navigate("greeting") },
                 modifier = Modifier.padding(top = 16.dp)
             ) {
                 Text(
@@ -1509,7 +1507,7 @@ enum class ItemType {
 fun StoreScreen(navController: NavController) {
     // Simulated user's current coins
     var userCoins by remember { mutableStateOf(500) }
-
+    var currentThemeBackground by remember { mutableStateOf<Int?>(null) }
     // Predefined store items
     val storeItems = listOf(
         // Themes
@@ -1523,10 +1521,9 @@ fun StoreScreen(navController: NavController) {
         StoreItem("giraffe_avatar", "Giraffe Avatar", 175, R.drawable.giraffe_avatar, ItemType.AVATAR),
         StoreItem("penguin_avatar", "Penguin Avatar", 175, R.drawable.penguin_avatar, ItemType.AVATAR)
     )
-
+    var showThemePopup by remember { mutableStateOf<StoreItem?>(null) }
     // Track purchased items
     var purchasedItems by remember { mutableStateOf(setOf<String>()) }
-
     Scaffold(
         topBar = {
             TopAppBar(
@@ -1540,7 +1537,7 @@ fun StoreScreen(navController: NavController) {
                 navigationIcon = {
                     IconButton(onClick = { navController.navigateUp() }) {
                         Icon(
-                            imageVector = Icons.Default.ArrowBack,
+                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                             contentDescription = "Back"
                         )
                     }
@@ -1556,49 +1553,96 @@ fun StoreScreen(navController: NavController) {
             )
         }
     ) { paddingValues ->
-        Column(
+        showThemePopup?.let { theme ->
+            AlertDialog(
+                onDismissRequest = { showThemePopup = null },
+                title = { Text("Change Theme") },
+                text = { Text("Do you want to set the ${theme.name} as your background?") },
+                confirmButton = {
+                    TextButton(
+                        onClick = {
+
+                            currentThemeBackground = theme.imageResId
+                            showThemePopup = null
+                        }
+                    ) {
+                        Text("Yes")
+                    }
+                },
+                dismissButton = {
+                    TextButton(
+                        onClick = { showThemePopup = null }
+                    ) {
+                        Text("No")
+                    }
+                }
+            )
+        }
+
+        // Background Image
+        currentThemeBackground?.let { imageResId ->
+            Image(
+                painter = painterResource(id = imageResId),
+                contentDescription = "Theme Background",
+                modifier = Modifier.fillMaxSize(),
+                contentScale = ContentScale.Crop
+            )
+        }
+
+        LazyColumn(
             modifier = Modifier
                 .padding(paddingValues)
                 .fillMaxSize()
                 .background(Color.White)
         ) {
             // Themes Section
-            Text(
-                "Themes",
-                modifier = Modifier.padding(16.dp),
-                fontWeight = FontWeight.Bold,
-                fontSize = 18.sp
-            )
-            StoreItemGrid(
-                items = storeItems.filter { it.type == ItemType.THEME },
-                userCoins = userCoins,
-                purchasedItems = purchasedItems,
-                onPurchase = { item ->
-                    if (userCoins >= item.price) {
-                        userCoins -= item.price
-                        purchasedItems += item.id
+            item {
+                Text(
+                    "Themes",
+                    modifier = Modifier.padding(16.dp),
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 18.sp
+                )
+            }
+            item {
+                StoreItemGrid(
+                    items = storeItems.filter { it.type == ItemType.THEME },
+                    userCoins = userCoins,
+                    purchasedItems = purchasedItems,
+                    onPurchase = { item ->
+                        if (userCoins >= item.price) {
+                            userCoins -= item.price
+                            purchasedItems += item.id
+                            showThemePopup = item
+                        }
                     }
-                }
-            )
+                )
+            }
 
             // Avatar Skins Section
-            Text(
-                "Avatar Skins",
-                modifier = Modifier.padding(16.dp),
-                fontWeight = FontWeight.Bold,
-                fontSize = 18.sp
-            )
-            StoreItemGrid(
-                items = storeItems.filter { it.type == ItemType.AVATAR },
-                userCoins = userCoins,
-                purchasedItems = purchasedItems,
-                onPurchase = { item ->
-                    if (userCoins >= item.price) {
-                        userCoins -= item.price
-                        purchasedItems += item.id
+            item {
+                Text(
+                    "Avatar Skins",
+                    modifier = Modifier.padding(16.dp),
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 18.sp
+                )
+            }
+            item {
+                StoreItemGrid(
+                    items = storeItems.filter { it.type == ItemType.AVATAR },
+                    userCoins = userCoins,
+                    purchasedItems = purchasedItems,
+                    onPurchase = { item ->
+                        if (userCoins >= item.price) {
+                            userCoins -= item.price
+                            purchasedItems += item.id
+                            avatarOptions.add(item.imageResId)
+                        }
                     }
-                }
-            )
+                )
+            }
+
         }
     }
 }
@@ -1610,65 +1654,89 @@ fun StoreItemGrid(
     purchasedItems: Set<String>,
     onPurchase: (StoreItem) -> Unit
 ) {
-    LazyVerticalGrid(
-        columns = GridCells.Fixed(2),
-        contentPadding = PaddingValues(8.dp)
+    Column(
+        modifier = Modifier.fillMaxWidth().padding(8.dp)
     ) {
-        items(items) { item ->
-            Card(
-                modifier = Modifier
-                    .padding(8.dp)
-                    .fillMaxWidth(),
-                elevation = CardDefaults.cardElevation(4.dp)
-            ) {
-                Column(
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    modifier = Modifier.padding(16.dp)
-                ) {
-                    Image(
-                        painter = painterResource(id = item.imageResId),
-                        contentDescription = item.name,
-                        modifier = Modifier
-                            .size(100.dp)
-                            .padding(bottom = 8.dp)
+        items.chunked(2).forEach { rowItems ->
+            Row(modifier = Modifier.fillMaxWidth()) {
+                rowItems.forEach { item ->
+                    StoreItemCard(
+                        item = item,
+                        userCoins = userCoins,
+                        purchasedItems = purchasedItems,
+                        onPurchase = onPurchase,
+                        modifier = Modifier.weight(1f)
                     )
-                    Text(
-                        text = item.name,
-                        fontWeight = FontWeight.Bold
-                    )
-                    Text(
-                        text = "${item.price} Coins",
-                        color = Color.Gray
-                    )
-
-                    if (item.id in purchasedItems) {
-                        Button(
-                            onClick = { /* Already purchased */ },
-                            enabled = false,
-                            colors = ButtonDefaults.buttonColors(
-                                containerColor = Color.Green,
-                                contentColor = Color.White
-                            )
-                        ) {
-                            Text("Owned")
-                        }
-                    } else {
-                        Button(
-                            onClick = { onPurchase(item) },
-                            enabled = userCoins >= item.price,
-                            colors = ButtonDefaults.buttonColors(
-                                containerColor = Color(0xFF228B22),
-                                contentColor = Color.White
-                            )
-                        ) {
-                            Text("Buy")
-                        }
-                    }
+                }
+                if (rowItems.size == 1) {
+                    Spacer(modifier = Modifier.weight(1f))
                 }
             }
         }
     }
 }
+
+@Composable
+fun StoreItemCard(
+    item: StoreItem,
+    userCoins: Int,
+    purchasedItems: Set<String>,
+    onPurchase: (StoreItem) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Card(
+        modifier = modifier
+            .padding(8.dp)
+            .fillMaxWidth(),
+        elevation = CardDefaults.cardElevation(4.dp)
+    ) {
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            modifier = Modifier.padding(16.dp)
+        ) {
+            Image(
+                painter = painterResource(id = item.imageResId),
+                contentDescription = item.name,
+                modifier = Modifier
+                    .size(100.dp)
+                    .padding(bottom = 8.dp)
+            )
+            Text(
+                text = item.name,
+                fontWeight = FontWeight.Bold
+            )
+            Text(
+                text = "${item.price} Coins",
+                color = Color.Gray
+            )
+
+            if (item.id in purchasedItems) {
+                Button(
+                    onClick = { /* Already purchased */ },
+                    enabled = false,
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = Color.Green,
+                        contentColor = Color.White
+                    )
+                ) {
+                    Text("Owned")
+                }
+            } else {
+                Button(
+                    onClick = { onPurchase(item) },
+                    enabled = userCoins >= item.price,
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = Color(0xFF228B22),
+                        contentColor = Color.White
+                    )
+                ) {
+                    Text("Buy")
+                }
+            }
+        }
+    }
+}
+
 
 class AnimalDictionary {
     var A = setOf(
