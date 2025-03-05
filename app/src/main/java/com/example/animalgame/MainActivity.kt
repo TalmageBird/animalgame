@@ -6,6 +6,7 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -43,6 +44,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
@@ -256,11 +258,8 @@ fun AnimalGameGreetingScreen(navController: NavController) {
 fun nameSubmission(navController: NavController) {
     // State to hold the text entered by the user
     var animalName by remember { mutableStateOf("") }
-    var message by remember { mutableStateOf("") }
+    var lastMessages by remember { mutableStateOf(listOf<Pair<String, Boolean>>()) }
     val animalDictionary = AnimalDictionary()
-
-    // Sample dictionary (replace this with your actual dictionary)
-    val animalGameDictionary = mutableMapOf<String, String>()
 
     Box(
         modifier = Modifier
@@ -275,15 +274,14 @@ fun nameSubmission(navController: NavController) {
         // Box for Back Button
         Box(
             modifier = Modifier
-                .align(Alignment.TopStart) // Align the back button to the top-left corner
-                .padding(top = 1.dp) // Padding for positioning the icon at the top-left
+                .align(Alignment.TopStart)
+                .padding(top = 1.dp)
         ) {
             IconButton(
-                onClick = { navController.popBackStack() },  // Back to the previous screen
+                onClick = { navController.popBackStack() },
                 modifier = Modifier
-                    .padding(top = 16.dp) // Padding for positioning the icon at the top-left
-                    .align(Alignment.TopStart) // Align the back button to the top-left corner
-                    .size(48.dp) // Set a fixed size for the icon button
+                    .padding(top = 16.dp)
+                    .size(48.dp)
             ) {
                 Icon(
                     imageVector = Icons.Default.ArrowBack,
@@ -297,7 +295,7 @@ fun nameSubmission(navController: NavController) {
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(top = 64.dp) // Give space for the back button at the top
+                .padding(top = 64.dp)
         ) {
             Column(
                 modifier = Modifier
@@ -336,21 +334,20 @@ fun nameSubmission(navController: NavController) {
                 // Animal Name TextField
                 TextField(
                     value = animalName,
-                    onValueChange = { newText -> animalName = newText }, // Save the entered value to the state
+                    onValueChange = { newText -> animalName = newText.trimStart() }, // Prevent leading spaces
                     label = { Text("Animal Name") },
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = 16.dp), // Padding for better spacing
+                        .padding(horizontal = 16.dp),
                     singleLine = true
                 )
 
-                // Submit Button
+                // Submit Button (Enabled Only If Text Is Entered)
                 Button(
                     onClick = {
-                        // Capitalize the first letter of the animal name
-                        val letter = animalName.first()
+                        val letter = animalName.firstOrNull()?.uppercase() ?: ""
 
-                        val animalList = when (letter.uppercase()) {
+                        val animalList = when (letter) {
                             "A" -> animalDictionary.A
                             "B" -> animalDictionary.B
                             "C" -> animalDictionary.C
@@ -377,17 +374,19 @@ fun nameSubmission(navController: NavController) {
                             "X" -> animalDictionary.X
                             "Y" -> animalDictionary.Y
                             "Z" -> animalDictionary.Z
-                            else -> throw IllegalArgumentException("Letter '$letter' is not valid in the dictionary.")
+                            else -> null
                         }
 
-                        // Check if the animal name exists in the dictionary
-                        if (isValidGuess(animalName, animalList)) {
-                            message = "This animal already exists in the Animal Game Dictionary."
+                        if (animalList != null && isValidGuess(animalName, animalList)) {
+                            val message = "Animal already exists in the Dictionary."
+                            lastMessages = listOf(message to true) + lastMessages
                         } else {
-                            // Submit Name Validation Request IMPLEMENT MEMORY RETENTION HERE
-                            message = "Animal name has been submitted."
+                            val message = "Animal name has been submitted."
+                            lastMessages = listOf(message to false) + lastMessages
+
                         }
                     },
+                    enabled = animalName.isNotBlank(), // Button is only clickable if text is entered
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(50.dp)
@@ -403,18 +402,21 @@ fun nameSubmission(navController: NavController) {
                 }
 
                 // Display message if there is one
-                if (message.isNotEmpty()) {
+                lastMessages.forEach { (messageText, isAlreadyIn) ->
+                    Spacer(modifier = Modifier.height(8.dp))
                     Text(
-                        text = message,
-                        color = Color.White,
-                        fontSize = 14.sp,
-                        modifier = Modifier.padding(top = 8.dp)
+                        text = messageText,
+                        fontSize = 18.sp,
+                        color = if (isAlreadyIn) Color.Yellow else Color.White,
                     )
                 }
+
+                //STOPPINGPOINT
             }
         }
     }
 }
+
 
 
 @Composable
@@ -513,6 +515,7 @@ fun howToPlay(navController: NavController) {
                         .size(340.dp)
                         .align(Alignment.CenterHorizontally) // Ensures the image is centered horizontally
                         .clip(RoundedCornerShape(16.dp)) // Rounded corners for the image
+                        .border(4.dp, Color.Black)
                 )
             }
         }
@@ -567,34 +570,29 @@ fun AnimalGameNavHost(navController: NavHostController) {
 fun viewDictionary(navController: NavController) {
     val alphabet = ('A'..'Z').toList()
 
-    // Box to allow layering the back button and title over the content
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(
-                Color(
-                    ContextCompat.getColor(
-                        LocalContext.current,
-                        R.color.safari_light_brown
-                    )
-                )
-            )
-            .alpha(5f)
-
-    ) {
-        Image(
-            painter = painterResource(id = backgroundTheme),
-            contentDescription = "Theme Background",
-            modifier = Modifier.fillMaxSize(),
-            contentScale = ContentScale.Crop
-        )
-        // Back Button icon at the top-left
-        IconButton(
-            onClick = { navController.popBackStack() },  // Back to the previous screen
+    Box(modifier = Modifier.fillMaxSize()) {
+        // Background for everything
+        Box(
             modifier = Modifier
-                .padding(top = 16.dp) // Padding for positioning the icon at the top-left
-                .align(Alignment.TopStart) // Align the back button to the top-left corner
-                .size(48.dp) // Set a fixed size for the icon button
+                .fillMaxSize()
+                .background(Color(ContextCompat.getColor(LocalContext.current, R.color.safari_light_brown)))
+        )
+
+        // Red background for the top section
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(121.dp) // Height to cover everything above the divider
+                .background(Color(0xFF83343B))
+        )
+
+        // Back Button
+        IconButton(
+            onClick = { navController.popBackStack() },
+            modifier = Modifier
+                .padding(top = 16.dp)
+                .align(Alignment.TopStart)
+                .size(48.dp)
         ) {
             Icon(
                 imageVector = Icons.Default.ArrowBack,
@@ -603,42 +601,38 @@ fun viewDictionary(navController: NavController) {
             )
         }
 
-        // Title Text at the top center
+        // Title
         Text(
             text = "Animal Game Dictionary",
             fontSize = 28.sp,
             fontWeight = FontWeight.Bold,
-            color = Color.Black,
+            color = Color.White,
             modifier = Modifier
-                .align(Alignment.TopCenter)  // Position it at the top center
-                .padding(top = 80.dp) // Add space from the top to avoid overlap with back button
+                .align(Alignment.TopCenter)
+                .padding(top = 60.dp)
         )
 
-        Spacer(modifier = Modifier.height(16.dp)) // Space before the first button
-
-
-        // Black horizontal line
+        // Black horizontal divider
         Divider(
             color = Color.Black,
             thickness = 1.dp,
             modifier = Modifier
-                .fillMaxWidth() // Makes the line span the full width
-                .padding(top = 120.dp) // Ensure the line is placed below the title
+                .fillMaxWidth()
+                .padding(top = 120.dp)
         )
 
-        // LazyColumn for the alphabet buttons, ensuring space for the title
+        // LazyColumn for alphabet buttons
         LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(top = 120.dp, start = 16.dp, end = 16.dp, bottom = 16.dp), // Adjust top padding to avoid overlap with title and back button
+                .padding(top = 120.dp, start = 16.dp, end = 16.dp, bottom = 16.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(16.dp) // Add spacing between rows of buttons
+            verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             item {
-                Spacer(modifier = Modifier.height(16.dp)) // Space before the first button
+                Spacer(modifier = Modifier.height(16.dp))
             }
             items(alphabet.chunked(1)) { row ->
-                // Row to arrange buttons horizontally
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
@@ -646,10 +640,7 @@ fun viewDictionary(navController: NavController) {
                 ) {
                     row.forEach { letter ->
                         Button(
-                            onClick = {
-                                // Replace with your specific navigation action
-                                navController.navigate("animal_list/${letter}")
-                            },
+                            onClick = { navController.navigate("animal_list/${letter}") },
                             modifier = Modifier
                                 .weight(1f)
                                 .height(50.dp),
@@ -665,15 +656,25 @@ fun viewDictionary(navController: NavController) {
                     }
                 }
                 Image(
-                    painter = getImage(row[0]), // Replace with your image resource
+                    painter = getImage(row[0]),
                     contentDescription = "Image description",
-                    modifier = Modifier.padding(16.dp),
+                    modifier = Modifier.padding(16.dp).border(4.dp, Color.Black),
                     contentScale = ContentScale.Crop
                 )
+                Spacer(modifier = Modifier.height(16.dp))
+                // Black horizontal divider
+                Divider(
+                    color = Color.Black,
+                    thickness = 1.dp,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                )
+                Spacer(modifier = Modifier.height(16.dp))
             }
         }
     }
 }
+
 
 @Composable
 fun getImage(letter: Char): Painter {
@@ -720,10 +721,13 @@ fun animalList(navController: NavController, letter: Char) {
     }
 
     // Box to allow layering the back button and title over the content
-    Box(
-        modifier = Modifier
+    Box(modifier = Modifier.fillMaxSize()) {
+        // Background for everything
+        Box(
+            modifier = Modifier
+                
             .fillMaxSize()
-            .background(
+                .background(
                 Color(
                     ContextCompat.getColor(
                         LocalContext.current,
@@ -732,8 +736,15 @@ fun animalList(navController: NavController, letter: Char) {
                 )
             )
             .alpha(5f)
+        )
 
-    ) {
+        // Red background for the top section
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(121.dp) // Height to cover everything above the divider
+                .background(Color(0xFF83343B))
+        )
         Image(
             painter = painterResource(id = backgroundTheme),
             contentDescription = "Theme Background",
@@ -760,10 +771,10 @@ fun animalList(navController: NavController, letter: Char) {
             text = "Letter $letter Dictionary",
             fontSize = 28.sp,
             fontWeight = FontWeight.Bold,
-            color = Color.Black,
+            color = Color.White,
             modifier = Modifier
                 .align(Alignment.TopCenter)  // Position it at the top center
-                .padding(top = 80.dp) // Add space from the top to avoid overlap with back button
+                .padding(top = 60.dp) // Add space from the top to avoid overlap with back button
         )
 
         // Black horizontal line
@@ -784,7 +795,15 @@ fun animalList(navController: NavController, letter: Char) {
             verticalArrangement = Arrangement.spacedBy(16.dp) // Add spacing between rows of buttons
         ) {
             item {
-                Spacer(modifier = Modifier.height(16.dp)) // Space before the first button
+                Image(
+                    painter = getImage(letter),
+                    contentDescription = "Image description",
+                    contentScale = ContentScale.Crop,
+                    modifier = Modifier.padding(top = 30.dp).fillMaxWidth().border(4.dp, Color.Black)
+                )
+            }
+            item {
+                Spacer(modifier = Modifier.height(16.dp)) // Space before the first animal
             }
             items(animalList.toList().sorted()) { animal ->
                 Text(text = animal, fontSize = 20.sp, fontWeight = FontWeight.Bold , style = MaterialTheme.typography.bodyLarge, modifier = Modifier.padding(8.dp))
@@ -997,10 +1016,12 @@ fun GamePlay(navController: NavController, letter: Char, numPlayers: Int) {
                         )
                     ).copy(alpha = 0.5f)
                 )
+            .then(if (nameEntryComplete) Modifier.border(4.dp, Color(0xFF83343B)) else Modifier)
                 .padding(16.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             if (!nameEntryComplete) {
+
                 // Player Name Entry Screen
                 Spacer(modifier = Modifier.height(16.dp))
 
@@ -1067,17 +1088,18 @@ fun GamePlay(navController: NavController, letter: Char, numPlayers: Int) {
                 Button(
                     onClick = { nameEntryComplete = true },
                     enabled = playerNames.all { it.isNotBlank() } && selectedAvatars.none { it == R.drawable.defaulticon },
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier.fillMaxWidth(),
+                colors = ButtonDefaults.buttonColors(containerColor = Color(android.graphics.Color.parseColor("#228B22")))
                 ) {
                     Text(text = "Start Game", fontSize = 18.sp, color = Color.White)
                 }
             } else {
                 // Game Start Screen after names and avatars are selected
-                Spacer(modifier = Modifier.height(16.dp))
+                Spacer(modifier = Modifier.height(24.dp))
 
                 Text(
                     text = "Animals that start with '$letter'",
-                    fontSize = 20.sp,
+                    fontSize = 30.sp,
                     fontWeight = FontWeight.Bold,
                     color = Color.Black
                 )
@@ -1108,11 +1130,12 @@ fun GamePlay(navController: NavController, letter: Char, numPlayers: Int) {
                         if (isCorrect && formattedGuess !in guessedAnimals) {
                             guessedAnimals.add(formattedGuess)
                             feedbackMessage =
-                                "${playerNames[currentPlayerIndex]} guessed correctly!"
+                                "${playerNames[currentPlayerIndex].replaceFirstChar { it.uppercase() }} guessed correctly!"
                         } else {
                             eliminatedPlayers.add(currentPlayerIndex)
                             feedbackMessage =
-                                "Incorrect Guess, ${playerNames[currentPlayerIndex]} has been eliminated!"
+                           
+                                "Incorrect Guess, ${playerNames[currentPlayerIndex].replaceFirstChar { it.uppercase() }} has been eliminated!"
                             // update isCorrect variable based on if the Animal is in the list but has already been guessed.
                             isCorrect = false
                         }
@@ -1127,13 +1150,15 @@ fun GamePlay(navController: NavController, letter: Char, numPlayers: Int) {
                             navController.navigate("winner_screen/${playerNames[winnerIndex]}")
                         } else {
                             currentPlayerIndex =
+                           
                                 getNextPlayer(currentPlayerIndex, numPlayers, eliminatedPlayers)
                         }
 
                         guess = "" // Reset guess input
                     },
                     enabled = guess.isNotBlank(),
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier.fillMaxWidth(),
+                colors = ButtonDefaults.buttonColors(containerColor = Color(android.graphics.Color.parseColor("#228B22")))
                 ) {
                     Text(text = "Submit Guess", fontSize = 18.sp, color = Color.White)
                 }
@@ -1158,13 +1183,14 @@ fun GamePlay(navController: NavController, letter: Char, numPlayers: Int) {
                             append("Current Turn: ")
                             // Display the player name in italics
                             withStyle(style = SpanStyle(fontStyle = FontStyle.Italic)) {
-                                append(playerNames[currentPlayerIndex].uppercase())
+                                append(playerNames[currentPlayerIndex].replaceFirstChar { it.uppercaseChar() })
                             }
                         },
                         fontSize = 24.sp,
                         fontWeight = FontWeight.Bold,
                         color = Color.White,
-                        modifier = Modifier.align(Alignment.Center)
+                        modifier = Modifier.align(Alignment.Center),
+                    textAlign = TextAlign.Center
                     )
                 }
 
@@ -1200,12 +1226,13 @@ fun GamePlay(navController: NavController, letter: Char, numPlayers: Int) {
                                 painter = painterResource(id = selectedAvatars[index]),
                                 contentDescription = "Avatar",
                                 modifier = Modifier
-                                    .size(50.dp)
+                                    .size(75.dp)
                                     .clip(CircleShape)
                             )
                         }
                     }
                 }
+
 
                 // Display Feedback Message
                 feedbackMessage?.let {
@@ -1213,7 +1240,8 @@ fun GamePlay(navController: NavController, letter: Char, numPlayers: Int) {
                         text = it,
                         fontSize = 18.sp,
                         color = if (it.contains("eliminated")) Color.Red else Color.Green,
-                        fontWeight = FontWeight.Bold
+                        fontWeight = FontWeight.Bold,
+                    textAlign = TextAlign.Center
                     )
                 }
 
@@ -1265,7 +1293,6 @@ fun getNextPlayer(currentIndex: Int, totalPlayers: Int, eliminatedPlayers: Set<I
 // Winner Screen
 @Composable
 fun WinnerScreen(navController: NavController, winnerName: String) {
-    Thread.sleep(1000)
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -1295,11 +1322,11 @@ fun WinnerScreen(navController: NavController, winnerName: String) {
         Image(
             painter = painterResource(id = R.drawable.animalgamevictory), // Replace with your image resource
             contentDescription = "Image description",
-            modifier = Modifier.padding(16.dp),
+            modifier = Modifier.padding(16.dp).border(4.dp, Color.Black),
             contentScale = ContentScale.Crop
         )
         Text(
-            text = "Congratulations, $winnerName! You won the Animal Game!",
+            text = "Congratulations, ${winnerName.replaceFirstChar { it.uppercase() }}! You won the Animal Game!",
             fontSize = 28.sp,
             fontWeight = FontWeight.Bold,
             color = Color.DarkGray,
@@ -1309,7 +1336,8 @@ fun WinnerScreen(navController: NavController, winnerName: String) {
         Spacer(modifier = Modifier.height(16.dp))
         Button(
             onClick = { navController.navigate("greeting") }, // Restart Game
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth(),
+            colors = ButtonDefaults.buttonColors(containerColor = Color(android.graphics.Color.parseColor("#228B22")))
         ) {
             Text(text = "Play Again", fontSize = 18.sp, color = Color.White)
         }
