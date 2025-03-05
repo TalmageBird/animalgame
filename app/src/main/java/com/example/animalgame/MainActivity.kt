@@ -42,6 +42,7 @@ import androidx.navigation.compose.rememberNavController
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
@@ -63,12 +64,17 @@ import androidx.compose.material.icons.filled.Email
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.*
+import androidx.compose.ui.graphics.painter.Painter
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.font.FontStyle
 
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
+import androidx.compose.ui.text.withStyle
 
 import androidx.core.content.ContextCompat
 
@@ -540,6 +546,9 @@ fun viewDictionary(navController: NavController) {
                 .padding(top = 80.dp) // Add space from the top to avoid overlap with back button
         )
 
+        Spacer(modifier = Modifier.height(16.dp)) // Space before the first button
+
+
         // Black horizontal line
         Divider(
             color = Color.Black,
@@ -587,9 +596,26 @@ fun viewDictionary(navController: NavController) {
                         }
                     }
                 }
+                Image(
+                    painter = getImage(row[0]), // Replace with your image resource
+                    contentDescription = "Image description",
+                    modifier = Modifier.padding(16.dp),
+                    contentScale = ContentScale.Crop
+                )
             }
         }
     }
+}
+
+@Composable
+fun getImage(letter: Char): Painter {
+    val context = LocalContext.current
+    val resourceName = "${letter.lowercase()}_animal_image" // Generates "a_animal_image", "b_animal_image", etc.
+    val resourceId = context.resources.getIdentifier(resourceName, "drawable", context.packageName)
+
+    return painterResource(
+        id = if (resourceId != 0) resourceId else R.drawable.defaulticon // Use default if not found
+    )
 }
 
 @Composable
@@ -872,7 +898,9 @@ fun GamePlay(navController: NavController, letter: Char, numPlayers: Int) {
                 text = "Enter Player Names & Choose Avatar",
                 fontSize = 24.sp,
                 fontWeight = FontWeight.Bold,
-                color = Color.Black
+                color = Color.Black,
+                textAlign = TextAlign.Center,
+                modifier = Modifier.fillMaxWidth() // Ensures text is centered properly
             )
 
             Spacer(modifier = Modifier.height(16.dp))
@@ -1000,12 +1028,30 @@ fun GamePlay(navController: NavController, letter: Char, numPlayers: Int) {
             Spacer(modifier = Modifier.height(24.dp))
 
             // Game Turn System
-            Text(
-                text = "Current Turn: ${playerNames[currentPlayerIndex]}",
-                fontSize = 24.sp,
-                fontWeight = FontWeight.Bold,
-                color = Color.Black
-            )
+            Box(
+                modifier = Modifier
+                    .padding(1.dp)  // Adds space around the box
+                    .clip(RoundedCornerShape(12.dp))  // Rounds the edges
+                    .background(Color(0xFF83343B))  // Terracotta red color
+                    .padding(horizontal = 2.dp, vertical = 8.dp)  // Inner padding
+                    .height(100.dp)
+                    .fillMaxWidth()
+            ) {
+                Text(
+                    text = buildAnnotatedString {
+                        // Display the "Current Turn: " text normally
+                        append("Current Turn: ")
+                        // Display the player name in italics
+                        withStyle(style = SpanStyle(fontStyle = FontStyle.Italic)) {
+                            append(playerNames[currentPlayerIndex].uppercase())
+                        }
+                    },
+                    fontSize = 24.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Color.White,
+                    modifier = Modifier.align(Alignment.Center)
+                )
+            }
 
 
             Spacer(modifier = Modifier.height(16.dp))
@@ -1041,11 +1087,6 @@ fun GamePlay(navController: NavController, letter: Char, numPlayers: Int) {
                             modifier = Modifier
                                 .size(50.dp)
                                 .clip(CircleShape)
-                        )
-                        Text(
-                            text = name,
-                            color = Color.Black,
-                            modifier = Modifier.align(Alignment.BottomCenter)
                         )
                     }
                 }
@@ -1108,7 +1149,7 @@ fun getNextPlayer(currentIndex: Int, totalPlayers: Int, eliminatedPlayers: Set<I
 // Winner Screen
 @Composable
 fun WinnerScreen(navController: NavController, winnerName: String) {
-    Thread.sleep(3000)
+    Thread.sleep(1000)
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -1127,7 +1168,9 @@ fun WinnerScreen(navController: NavController, winnerName: String) {
             text = "Congratulations, $winnerName! You won the Animal Game!",
             fontSize = 28.sp,
             fontWeight = FontWeight.Bold,
-            color = Color.DarkGray
+            color = Color.DarkGray,
+            textAlign = TextAlign.Center,
+            modifier = Modifier.fillMaxWidth() // Ensures text is centered properly
         )
         Spacer(modifier = Modifier.height(16.dp))
         Button(
