@@ -66,6 +66,7 @@ import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.ShoppingCart
 import androidx.compose.material3.*
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
@@ -77,6 +78,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.withStyle
+import androidx.compose.ui.tooling.preview.Preview
 
 import androidx.core.content.ContextCompat
 
@@ -84,9 +86,12 @@ import androidx.navigation.NavController
 import androidx.navigation.NavHostController
 
 var name = "Guest"
+var totalCoins = 500
 val avatarOptions = mutableListOf(
     R.drawable.tiger, R.drawable.parrot, R.drawable.monkey, R.drawable.elephant
 )
+var backgroundTheme = R.drawable.safari_light_brown
+var ownedItems = mutableSetOf<String>()
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -101,14 +106,34 @@ class MainActivity : ComponentActivity() {
 
 @Composable
 fun AnimalGameGreetingScreen(navController: NavController) {
-    Column(
+    Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color(ContextCompat.getColor(LocalContext.current, R.color.safari_light_brown)))
-            .padding(16.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center
     ) {
+        // Background Image
+        Image(
+            painter = painterResource(id = backgroundTheme),
+            contentDescription = "Theme Background",
+            modifier = Modifier.fillMaxSize(),
+            contentScale = ContentScale.Crop
+        )
+
+        // Foreground Column with content
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(
+                    Color(
+                        ContextCompat.getColor(
+                            LocalContext.current,
+                            R.color.safari_light_brown
+                        )
+                    ).copy(alpha = 0.5f)
+                ) // Optional semi-transparent overlay
+                .padding(16.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
+        ) {
         // Store Button in the top left
         Row(
             modifier = Modifier.fillMaxWidth(),
@@ -225,6 +250,7 @@ fun AnimalGameGreetingScreen(navController: NavController) {
         }
     }
 }
+    }
 
 @Composable
 fun nameSubmission(navController: NavController) {
@@ -239,8 +265,13 @@ fun nameSubmission(navController: NavController) {
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color(ContextCompat.getColor(LocalContext.current, R.color.safari_light_brown)))
     ) {
+        Image(
+            painter = painterResource(id = backgroundTheme),
+            contentDescription = "Theme Background",
+            modifier = Modifier.fillMaxSize(),
+            contentScale = ContentScale.Crop
+        )
         // Box for Back Button
         Box(
             modifier = Modifier
@@ -271,6 +302,14 @@ fun nameSubmission(navController: NavController) {
             Column(
                 modifier = Modifier
                     .fillMaxSize()
+                    .background(
+                        Color(
+                            ContextCompat.getColor(
+                                LocalContext.current,
+                                R.color.safari_light_brown
+                            )
+                        ).copy(alpha = 0.5f)
+                    )
                     .padding(horizontal = 16.dp),
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.Top
@@ -381,8 +420,16 @@ fun nameSubmission(navController: NavController) {
 @Composable
 fun howToPlay(navController: NavController) {
     Box(
-        modifier = Modifier.fillMaxSize().background(Color(ContextCompat.getColor(LocalContext.current, R.color.safari_light_brown)))
+        modifier = Modifier
+            .fillMaxSize()
+
     ) {
+        Image(
+            painter = painterResource(id = backgroundTheme),
+            contentDescription = "Theme Background",
+            modifier = Modifier.fillMaxSize(),
+            contentScale = ContentScale.Crop
+        )
         // Back Button Box (non-scrollable, always on top)
         Box(
             modifier = Modifier
@@ -409,6 +456,14 @@ fun howToPlay(navController: NavController) {
         Box(
             modifier = Modifier
                 .fillMaxSize()
+                .background(
+                    Color(
+                        ContextCompat.getColor(
+                            LocalContext.current,
+                            R.color.safari_light_brown
+                        )
+                    ).copy(alpha = 0.5f)
+                )
                 .padding(top = 64.dp) // Ensure content starts after the back button
                 .verticalScroll(rememberScrollState()) // Make the column scrollable
         ) {
@@ -514,10 +569,25 @@ fun viewDictionary(navController: NavController) {
 
     // Box to allow layering the back button and title over the content
     Box(
-        modifier = Modifier.fillMaxSize()
-            .background(Color(ContextCompat.getColor(LocalContext.current, R.color.safari_light_brown)))
+        modifier = Modifier
+            .fillMaxSize()
+            .background(
+                Color(
+                    ContextCompat.getColor(
+                        LocalContext.current,
+                        R.color.safari_light_brown
+                    )
+                )
+            )
+            .alpha(5f)
 
     ) {
+        Image(
+            painter = painterResource(id = backgroundTheme),
+            contentDescription = "Theme Background",
+            modifier = Modifier.fillMaxSize(),
+            contentScale = ContentScale.Crop
+        )
         // Back Button icon at the top-left
         IconButton(
             onClick = { navController.popBackStack() },  // Back to the previous screen
@@ -651,10 +721,25 @@ fun animalList(navController: NavController, letter: Char) {
 
     // Box to allow layering the back button and title over the content
     Box(
-        modifier = Modifier.fillMaxSize()
-            .background(Color(ContextCompat.getColor(LocalContext.current, R.color.safari_light_brown)))
+        modifier = Modifier
+            .fillMaxSize()
+            .background(
+                Color(
+                    ContextCompat.getColor(
+                        LocalContext.current,
+                        R.color.safari_light_brown
+                    )
+                )
+            )
+            .alpha(5f)
 
     ) {
+        Image(
+            painter = painterResource(id = backgroundTheme),
+            contentDescription = "Theme Background",
+            modifier = Modifier.fillMaxSize(),
+            contentScale = ContentScale.Crop
+        )
         // Back Button icon at the top-left
         IconButton(
             onClick = { navController.popBackStack() },  // Back to the previous screen
@@ -717,15 +802,19 @@ fun GameScreen(navController: NavController) {
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color(ContextCompat.getColor(LocalContext.current, R.color.safari_light_brown)))
-            .padding(16.dp)
     ) {
+        Image(
+            painter = painterResource(id = backgroundTheme),
+            contentDescription = "Theme Background",
+            modifier = Modifier.fillMaxSize(),
+            contentScale = ContentScale.Crop
+        )
         // Back Button
         IconButton(
             onClick = { navController.popBackStack() },
             modifier = Modifier
                 .align(Alignment.TopStart)
-                .padding(1.dp)
+                .padding(8.dp)
         ) {
             Icon(
                 imageVector = Icons.Default.ArrowBack,
@@ -735,7 +824,15 @@ fun GameScreen(navController: NavController) {
         }
 
         Column(
-            modifier = Modifier.fillMaxSize(),
+            modifier = Modifier.fillMaxSize()
+                .background(
+                    Color(
+                        ContextCompat.getColor(
+                            LocalContext.current,
+                            R.color.safari_light_brown
+                        )
+                    ).copy(alpha = 0.5f)
+                ),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center // Correct placement
         ) {
@@ -762,7 +859,7 @@ fun GameScreen(navController: NavController) {
                         modifier = Modifier
                             .padding(4.dp)
                             .background(
-                                if (selectedLetter == letter) colorResource(id=R.color.forest_green) else Color.Gray
+                                if (selectedLetter == letter) colorResource(id = R.color.forest_green) else Color.Gray
                             ),
                         colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent)
                     ) {
@@ -797,7 +894,7 @@ fun GameScreen(navController: NavController) {
                         modifier = Modifier
                             .padding(4.dp)
                             .background(
-                                if (selectedPlayers == playerCount) colorResource(id=R.color.forest_green) else Color.Gray
+                                if (selectedPlayers == playerCount) colorResource(id = R.color.forest_green) else Color.Gray
                             ),
                         colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent)
                     ) {
@@ -880,245 +977,266 @@ fun GamePlay(navController: NavController, letter: Char, numPlayers: Int) {
     //val avatarOptions = listOf(
         //R.drawable.tiger, R.drawable.parrot, R.drawable.monkey, R.drawable.elephant
     //)
-
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(Color(ContextCompat.getColor(LocalContext.current, R.color.safari_light_brown)))
-            .padding(16.dp),
-        horizontalAlignment = Alignment.CenterHorizontally
+    Box(
     ) {
-        if (!nameEntryComplete) {
-            // Player Name Entry Screen
-            Spacer(modifier = Modifier.height(16.dp))
+        // Background Image
+        Image(
+            painter = painterResource(id = backgroundTheme),
+            contentDescription = "Theme Background",
+            modifier = Modifier.fillMaxSize(),
+            contentScale = ContentScale.Crop
+        )
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(
+                    Color(
+                        ContextCompat.getColor(
+                            LocalContext.current,
+                            R.color.safari_light_brown
+                        )
+                    ).copy(alpha = 0.5f)
+                )
+                .padding(16.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            if (!nameEntryComplete) {
+                // Player Name Entry Screen
+                Spacer(modifier = Modifier.height(16.dp))
 
-            Text(
-                text = "Enter Player Names & Choose Avatar",
-                fontSize = 24.sp,
-                fontWeight = FontWeight.Bold,
-                color = Color.Black,
-                textAlign = TextAlign.Center,
-                modifier = Modifier.fillMaxWidth() // Ensures text is centered properly
-            )
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            playerNames.forEachIndexed { index, _ ->
-                Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    TextField(
-                        value = playerNames[index],
-                        onValueChange = { newName ->
-                            playerNames = playerNames.toMutableList().also { it[index] = newName }
-                        },
-                        label = { Text("Player ${index + 1} Name") },
-                        modifier = Modifier.fillMaxWidth(),
-                        singleLine = true
-                    )
-                    Spacer(modifier = Modifier.height(8.dp))
-
-                    // Avatar Selection
-                    Text("Select Avatar:")
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceEvenly
-                    ) {
-                        avatarOptions.forEach { avatarResId ->
-                            Box(
-                                modifier = Modifier
-                                    .size(64.dp)
-                                    .clip(CircleShape)
-                                    .background(
-                                        if (selectedAvatars[index] == avatarResId) Color.DarkGray else Color.Transparent
-                                    )
-                                    .clickable {
-                                        selectedAvatars = selectedAvatars.toMutableList().also {
-                                            it[index] = avatarResId
-                                        }
-                                    },
-                                contentAlignment = Alignment.Center
-                            ) {
-                                Image(
-                                    painter = painterResource(id = avatarResId),
-                                    contentDescription = "Avatar",
-                                    modifier = Modifier
-                                        .fillMaxSize()
-                                        .clip(CircleShape)
-                                )
-                            }
-                        }
-                    }
-                    Spacer(modifier = Modifier.height(16.dp))
-                }
-            }
-
-            Button(
-                onClick = { nameEntryComplete = true },
-                enabled = playerNames.all { it.isNotBlank() } && selectedAvatars.none { it == R.drawable.defaulticon },
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Text(text = "Start Game", fontSize = 18.sp, color = Color.White)
-            }
-        } else {
-            // Game Start Screen after names and avatars are selected
-            Spacer(modifier = Modifier.height(16.dp))
-
-            Text(
-                text = "Animals that start with '$letter'",
-                fontSize = 20.sp,
-                fontWeight = FontWeight.Bold,
-                color = Color.Black
-            )
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            // Guess Input Field
-            androidx.compose.material3.TextField(
-                value = guess,
-                onValueChange = { guess = it },
-                label = { Text("Enter an animal") },
-                modifier = Modifier.fillMaxWidth(),
-                singleLine = true
-            )
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            // Submit Guess Button
-            Button(
-                onClick = {
-                    val formattedGuess = guess.trim().replaceFirstChar { it.uppercase() }
-                    var isCorrect = isValidGuess(formattedGuess, animalList)
-
-                    if (isCorrect && formattedGuess !in guessedAnimals) {
-                        guessedAnimals.add(formattedGuess)
-                        feedbackMessage = "${playerNames[currentPlayerIndex]} guessed correctly!"
-                    } else {
-                        eliminatedPlayers.add(currentPlayerIndex)
-                        feedbackMessage = "Incorrect Guess, ${playerNames[currentPlayerIndex]} has been eliminated!"
-                        // update isCorrect variable based on if the Animal is in the list but has already been guessed.
-                        isCorrect = false
-                    }
-
-
-                    // Update lastGuesses list with (guess, isCorrect)
-                    lastGuesses = listOf(formattedGuess to isCorrect) + lastGuesses
-
-                    if (eliminatedPlayers.size == numPlayers - 1) {
-                        val winnerIndex = (0 until numPlayers).first { it !in eliminatedPlayers }
-                        navController.navigate("winner_screen/${playerNames[winnerIndex]}")
-                    } else {
-                        currentPlayerIndex = getNextPlayer(currentPlayerIndex, numPlayers, eliminatedPlayers)
-                    }
-
-                    guess = "" // Reset guess input
-                },
-                enabled = guess.isNotBlank(),
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Text(text = "Submit Guess", fontSize = 18.sp, color = Color.White)
-            }
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            Spacer(modifier = Modifier.height(24.dp))
-
-            // Game Turn System
-            Box(
-                modifier = Modifier
-                    .padding(1.dp)  // Adds space around the box
-                    .clip(RoundedCornerShape(12.dp))  // Rounds the edges
-                    .background(Color(0xFF83343B))  // Terracotta red color
-                    .padding(horizontal = 2.dp, vertical = 8.dp)  // Inner padding
-                    .height(100.dp)
-                    .fillMaxWidth()
-            ) {
                 Text(
-                    text = buildAnnotatedString {
-                        // Display the "Current Turn: " text normally
-                        append("Current Turn: ")
-                        // Display the player name in italics
-                        withStyle(style = SpanStyle(fontStyle = FontStyle.Italic)) {
-                            append(playerNames[currentPlayerIndex].uppercase())
-                        }
-                    },
+                    text = "Enter Player Names & Choose Avatar",
                     fontSize = 24.sp,
                     fontWeight = FontWeight.Bold,
-                    color = Color.White,
-                    modifier = Modifier.align(Alignment.Center)
+                    color = Color.Black,
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier.fillMaxWidth() // Ensures text is centered properly
                 )
-            }
 
+                Spacer(modifier = Modifier.height(16.dp))
 
-            Spacer(modifier = Modifier.height(16.dp))
-
-
-            // Display Player Avatars and Names
-            Spacer(modifier = Modifier.height(16.dp))
-
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 8.dp),
-                horizontalArrangement = Arrangement.Center
-            ) {
-                playerNames.forEachIndexed { index, name ->
-                    val isEliminated = eliminatedPlayers.contains(index)
-                    val backgroundColor = when {
-                        index == currentPlayerIndex -> Color.Green
-                        isEliminated -> Color.Red
-                        else -> Color.Transparent
-                    }
-                    Box(
-                        modifier = Modifier
-                            .padding(8.dp)
-                            .clip(CircleShape)
-                            .background(backgroundColor)
-                            .clickable { /* handle avatar click if needed */ },
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Image(
-                            painter = painterResource(id = selectedAvatars[index]),
-                            contentDescription = "Avatar",
-                            modifier = Modifier
-                                .size(50.dp)
-                                .clip(CircleShape)
+                playerNames.forEachIndexed { index, _ ->
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        TextField(
+                            value = playerNames[index],
+                            onValueChange = { newName ->
+                                playerNames =
+                                    playerNames.toMutableList().also { it[index] = newName }
+                            },
+                            label = { Text("Player ${index + 1} Name") },
+                            modifier = Modifier.fillMaxWidth(),
+                            singleLine = true
                         )
+                        Spacer(modifier = Modifier.height(8.dp))
+
+                        // Avatar Selection
+                        Text("Select Avatar:")
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceEvenly
+                        ) {
+                            avatarOptions.forEach { avatarResId ->
+                                Box(
+                                    modifier = Modifier
+                                        .size(64.dp)
+                                        .clip(CircleShape)
+                                        .background(
+                                            if (selectedAvatars[index] == avatarResId) Color.DarkGray else Color.Transparent
+                                        )
+                                        .clickable {
+                                            selectedAvatars = selectedAvatars.toMutableList().also {
+                                                it[index] = avatarResId
+                                            }
+                                        },
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Image(
+                                        painter = painterResource(id = avatarResId),
+                                        contentDescription = "Avatar",
+                                        modifier = Modifier
+                                            .fillMaxSize()
+                                            .clip(CircleShape)
+                                    )
+                                }
+                            }
+                        }
+                        Spacer(modifier = Modifier.height(16.dp))
                     }
                 }
-            }
 
-            // Display Feedback Message
-            feedbackMessage?.let {
+                Button(
+                    onClick = { nameEntryComplete = true },
+                    enabled = playerNames.all { it.isNotBlank() } && selectedAvatars.none { it == R.drawable.defaulticon },
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text(text = "Start Game", fontSize = 18.sp, color = Color.White)
+                }
+            } else {
+                // Game Start Screen after names and avatars are selected
+                Spacer(modifier = Modifier.height(16.dp))
+
                 Text(
-                    text = it,
-                    fontSize = 18.sp,
-                    color = if (it.contains("eliminated")) Color.Red else Color.Green,
-                    fontWeight = FontWeight.Bold
+                    text = "Animals that start with '$letter'",
+                    fontSize = 20.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Color.Black
                 )
-            }
 
-            Spacer(modifier = Modifier.height(16.dp))
+                Spacer(modifier = Modifier.height(16.dp))
 
-            Text(
-                text = "Previous Guesses:",
-                fontSize = 20.sp,
-                fontWeight = FontWeight.Bold,
-                color = Color.Black
-            )
 
-            Spacer(modifier = Modifier.height(8.dp))
 
-            lastGuesses.forEach { (guessText, isCorrect) ->
+                Spacer(modifier = Modifier.height(16.dp))
+
+                // Guess Input Field
+                androidx.compose.material3.TextField(
+                    value = guess,
+                    onValueChange = { guess = it },
+                    label = { Text("Enter an animal") },
+                    modifier = Modifier.fillMaxWidth(),
+                    singleLine = true
+                )
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                // Submit Guess Button
+                Button(
+                    onClick = {
+                        val formattedGuess = guess.trim().replaceFirstChar { it.uppercase() }
+                        var isCorrect = isValidGuess(formattedGuess, animalList)
+
+                        if (isCorrect && formattedGuess !in guessedAnimals) {
+                            guessedAnimals.add(formattedGuess)
+                            feedbackMessage =
+                                "${playerNames[currentPlayerIndex]} guessed correctly!"
+                        } else {
+                            eliminatedPlayers.add(currentPlayerIndex)
+                            feedbackMessage =
+                                "Incorrect Guess, ${playerNames[currentPlayerIndex]} has been eliminated!"
+                            // update isCorrect variable based on if the Animal is in the list but has already been guessed.
+                            isCorrect = false
+                        }
+
+
+                        // Update lastGuesses list with (guess, isCorrect)
+                        lastGuesses = listOf(formattedGuess to isCorrect) + lastGuesses
+
+                        if (eliminatedPlayers.size == numPlayers - 1) {
+                            val winnerIndex =
+                                (0 until numPlayers).first { it !in eliminatedPlayers }
+                            navController.navigate("winner_screen/${playerNames[winnerIndex]}")
+                        } else {
+                            currentPlayerIndex =
+                                getNextPlayer(currentPlayerIndex, numPlayers, eliminatedPlayers)
+                        }
+
+                        guess = "" // Reset guess input
+                    },
+                    enabled = guess.isNotBlank(),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text(text = "Submit Guess", fontSize = 18.sp, color = Color.White)
+                }
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                Spacer(modifier = Modifier.height(24.dp))
+
+                // Game Turn System
+                Box(
+                    modifier = Modifier
+                        .padding(1.dp)  // Adds space around the box
+                        .clip(RoundedCornerShape(12.dp))  // Rounds the edges
+                        .background(Color(0xFF83343B))  // Terracotta red color
+                        .padding(horizontal = 2.dp, vertical = 8.dp)  // Inner padding
+                        .height(100.dp)
+                        .fillMaxWidth()
+                ) {
+                    Text(
+                        text = buildAnnotatedString {
+                            // Display the "Current Turn: " text normally
+                            append("Current Turn: ")
+                            // Display the player name in italics
+                            withStyle(style = SpanStyle(fontStyle = FontStyle.Italic)) {
+                                append(playerNames[currentPlayerIndex].uppercase())
+                            }
+                        },
+                        fontSize = 24.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = Color.White,
+                        modifier = Modifier.align(Alignment.Center)
+                    )
+                }
+
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+
+                // Display Player Avatars and Names
+                Spacer(modifier = Modifier.height(16.dp))
+
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 8.dp),
+                    horizontalArrangement = Arrangement.Center
+                ) {
+                    playerNames.forEachIndexed { index, name ->
+                        val isEliminated = eliminatedPlayers.contains(index)
+                        val backgroundColor = when {
+                            index == currentPlayerIndex -> Color.Green
+                            isEliminated -> Color.Red
+                            else -> Color.Transparent
+                        }
+                        Box(
+                            modifier = Modifier
+                                .padding(8.dp)
+                                .clip(CircleShape)
+                                .background(backgroundColor)
+                                .clickable { /* handle avatar click if needed */ },
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Image(
+                                painter = painterResource(id = selectedAvatars[index]),
+                                contentDescription = "Avatar",
+                                modifier = Modifier
+                                    .size(50.dp)
+                                    .clip(CircleShape)
+                            )
+                        }
+                    }
+                }
+
+                // Display Feedback Message
+                feedbackMessage?.let {
+                    Text(
+                        text = it,
+                        fontSize = 18.sp,
+                        color = if (it.contains("eliminated")) Color.Red else Color.Green,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+
+                Spacer(modifier = Modifier.height(16.dp))
+
                 Text(
-                    text = guessText,
-                    fontSize = 18.sp,
-                    color = if (isCorrect) Color.Green else Color.Red
+                    text = "Previous Guesses:",
+                    fontSize = 20.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Color.Black
                 )
-            }
 
+                Spacer(modifier = Modifier.height(8.dp))
+
+                lastGuesses.forEach { (guessText, isCorrect) ->
+                    Text(
+                        text = guessText,
+                        fontSize = 18.sp,
+                        color = if (isCorrect) Color.Green else Color.Red
+                    )
+                }
+
+            }
         }
     }
 }
@@ -1148,10 +1266,28 @@ fun getNextPlayer(currentIndex: Int, totalPlayers: Int, eliminatedPlayers: Set<I
 @Composable
 fun WinnerScreen(navController: NavController, winnerName: String) {
     Thread.sleep(1000)
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+    ) {
+        // Background Image
+        Image(
+            painter = painterResource(id = backgroundTheme),
+            contentDescription = "Theme Background",
+            modifier = Modifier.fillMaxSize(),
+            contentScale = ContentScale.Crop
+        )
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color(ContextCompat.getColor(LocalContext.current, R.color.safari_light_brown)))
+            .background(
+                Color(
+                    ContextCompat.getColor(
+                        LocalContext.current,
+                        R.color.safari_light_brown
+                    )
+                ).copy(alpha = 0.5f)
+            )
             .padding(16.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
@@ -1179,6 +1315,7 @@ fun WinnerScreen(navController: NavController, winnerName: String) {
         }
     }
 }
+}
 
 
 @Composable
@@ -1191,7 +1328,14 @@ fun LoginScreen(navController: NavController) {
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color(ContextCompat.getColor(LocalContext.current, R.color.safari_light_brown)))
+            .background(
+                Color(
+                    ContextCompat.getColor(
+                        LocalContext.current,
+                        R.color.safari_light_brown
+                    )
+                )
+            )
     ) {
         Column(
             modifier = Modifier
@@ -1335,7 +1479,14 @@ fun RegisterScreen(navController: NavController) {
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color(ContextCompat.getColor(LocalContext.current, R.color.safari_light_brown)))
+            .background(
+                Color(
+                    ContextCompat.getColor(
+                        LocalContext.current,
+                        R.color.safari_light_brown
+                    )
+                )
+            )
     ) {
         Column(
             modifier = Modifier
@@ -1506,8 +1657,8 @@ enum class ItemType {
 @Composable
 fun StoreScreen(navController: NavController) {
     // Simulated user's current coins
-    var userCoins by remember { mutableStateOf(500) }
-    var currentThemeBackground by remember { mutableStateOf<Int?>(null) }
+    var userCoins by remember { mutableStateOf(totalCoins) }
+    var currentThemeBackground by remember { mutableStateOf<Int?>(backgroundTheme) }
     // Predefined store items
     val storeItems = listOf(
         // Themes
@@ -1523,7 +1674,7 @@ fun StoreScreen(navController: NavController) {
     )
     var showThemePopup by remember { mutableStateOf<StoreItem?>(null) }
     // Track purchased items
-    var purchasedItems by remember { mutableStateOf(setOf<String>()) }
+    var purchasedItems = ownedItems
     Scaffold(
         topBar = {
             TopAppBar(
@@ -1563,6 +1714,7 @@ fun StoreScreen(navController: NavController) {
                         onClick = {
 
                             currentThemeBackground = theme.imageResId
+                            backgroundTheme = theme.imageResId
                             showThemePopup = null
                         }
                     ) {
@@ -1589,20 +1741,27 @@ fun StoreScreen(navController: NavController) {
             )
         }
 
+
         LazyColumn(
             modifier = Modifier
                 .padding(paddingValues)
                 .fillMaxSize()
-                .background(Color.White)
         ) {
             // Themes Section
             item {
-                Text(
-                    "Themes",
-                    modifier = Modifier.padding(16.dp),
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 18.sp
-                )
+
+                Box(
+                    modifier = Modifier
+                        .background(Color.LightGray, shape = RoundedCornerShape(4.dp))
+                        .padding(4.dp) // Padding outside the box
+                ) {
+                    Text(
+                        text = "Themes",
+                        modifier = Modifier.padding(16.dp), // Padding inside the box
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 18.sp
+                    )
+                }
             }
             item {
                 StoreItemGrid(
@@ -1612,7 +1771,9 @@ fun StoreScreen(navController: NavController) {
                     onPurchase = { item ->
                         if (userCoins >= item.price) {
                             userCoins -= item.price
-                            purchasedItems += item.id
+                            totalCoins = userCoins
+                            purchasedItems.add(item.id)
+                            ownedItems.add(item.id)
                             showThemePopup = item
                         }
                     }
@@ -1621,12 +1782,18 @@ fun StoreScreen(navController: NavController) {
 
             // Avatar Skins Section
             item {
-                Text(
-                    "Avatar Skins",
-                    modifier = Modifier.padding(16.dp),
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 18.sp
-                )
+                Box(
+                    modifier = Modifier
+                        .background(Color.LightGray, shape = RoundedCornerShape(4.dp))
+                        .padding(4.dp) // Padding outside the box
+                ) {
+                    Text(
+                        text = "Avatars",
+                        modifier = Modifier.padding(16.dp), // Padding inside the box
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 18.sp
+                    )
+                }
             }
             item {
                 StoreItemGrid(
@@ -1636,7 +1803,9 @@ fun StoreScreen(navController: NavController) {
                     onPurchase = { item ->
                         if (userCoins >= item.price) {
                             userCoins -= item.price
-                            purchasedItems += item.id
+                            totalCoins = userCoins
+                            purchasedItems.add(item.id)
+                            ownedItems.add(item.id)
                             avatarOptions.add(item.imageResId)
                         }
                     }
@@ -1655,7 +1824,9 @@ fun StoreItemGrid(
     onPurchase: (StoreItem) -> Unit
 ) {
     Column(
-        modifier = Modifier.fillMaxWidth().padding(8.dp)
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(8.dp)
     ) {
         items.chunked(2).forEach { rowItems ->
             Row(modifier = Modifier.fillMaxWidth()) {
@@ -1716,7 +1887,7 @@ fun StoreItemCard(
                     enabled = false,
                     colors = ButtonDefaults.buttonColors(
                         containerColor = Color.Green,
-                        contentColor = Color.White
+                        contentColor = Color.LightGray
                     )
                 ) {
                     Text("Owned")
@@ -1727,7 +1898,7 @@ fun StoreItemCard(
                     enabled = userCoins >= item.price,
                     colors = ButtonDefaults.buttonColors(
                         containerColor = Color(0xFF228B22),
-                        contentColor = Color.White
+                        contentColor = Color.LightGray
                     )
                 ) {
                     Text("Buy")
