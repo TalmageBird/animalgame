@@ -90,6 +90,32 @@ class MainActivity : ComponentActivity() {
 
 @Composable
 fun AnimalGameGreetingScreen(navController: NavController) {
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Color(ContextCompat.getColor(LocalContext.current, R.color.safari_light_brown)))
+    ) {
+        // Box for Back Button
+        Box(
+            modifier = Modifier
+                .align(Alignment.TopStart) // Align the back button to the top-left corner
+                .padding(top = 1.dp) // Padding for positioning the icon at the top-left
+        ) {
+            IconButton(
+                onClick = { navController.navigate("store") },  // Back to the previous screen
+                modifier = Modifier
+                    .padding(top = 16.dp) // Padding for positioning the icon at the top-left
+                    .align(Alignment.TopStart) // Align the back button to the top-left corner
+                    .size(48.dp) // Set a fixed size for the icon button
+            ) {
+                Icon(
+                    imageVector = Icons.Default.ArrowBack,
+                    contentDescription = "Back",
+                    tint = Color.Black
+                )
+            }
+        }
+    }
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -445,6 +471,7 @@ fun AnimalGameNavHost(navController: NavHostController) {
         composable("game_screen") { GameScreen(navController) }
         composable("login") { LoginScreen(navController) }
         composable("register") { RegisterScreen(navController) }
+        composable("store") { StoreScreen(navController) }
         composable(
             "game_play/{letter}/{numPlayers}",
             arguments = listOf(
@@ -1416,6 +1443,184 @@ fun RegisterScreen(navController: NavController) {
                         color = colorResource(id = R.color.forest_green),
                         fontWeight = FontWeight.Bold
                     )
+                }
+            }
+        }
+    }
+}
+
+data class StoreItem(
+    val id: String,
+    val name: String,
+    val price: Int,
+    val imageResId: Int,
+    val type: ItemType
+)
+
+enum class ItemType {
+    THEME, AVATAR
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun StoreScreen(navController: NavController) {
+    // Simulated user's current coins
+    var userCoins by remember { mutableStateOf(500) }
+
+    // Predefined store items
+    val storeItems = listOf(
+        // Themes
+        StoreItem("safari_theme", "Safari Theme", 200, R.drawable.safari_theme, ItemType.THEME),
+        StoreItem("ocean_theme", "Ocean Theme", 250, R.drawable.ocean_theme, ItemType.THEME),
+        StoreItem("forest_theme", "Forest Theme", 200, R.drawable.forest_theme, ItemType.THEME),
+
+        // Avatar Skins
+        StoreItem("lion_avatar", "Lion Avatar", 150, R.drawable.lion_avatar, ItemType.AVATAR),
+        StoreItem("bear_avatar", "Bear Avatar", 150, R.drawable.bear_avatar, ItemType.AVATAR),
+        StoreItem("giraffe_avatar", "Giraffe Avatar", 175, R.drawable.giraffe_avatar, ItemType.AVATAR),
+        StoreItem("penguin_avatar", "Penguin Avatar", 175, R.drawable.penguin_avatar, ItemType.AVATAR)
+    )
+
+    // Track purchased items
+    var purchasedItems by remember { mutableStateOf(setOf<String>()) }
+
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = {
+                    Text(
+                        "Store",
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 20.sp
+                    )
+                },
+                navigationIcon = {
+                    IconButton(onClick = { navController.navigateUp() }) {
+                        Icon(
+                            imageVector = Icons.Default.ArrowBack,
+                            contentDescription = "Back"
+                        )
+                    }
+                },
+                actions = {
+                    Text(
+                        "Coins: $userCoins",
+                        modifier = Modifier.padding(end = 16.dp),
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 16.sp
+                    )
+                }
+            )
+        }
+    ) { paddingValues ->
+        Column(
+            modifier = Modifier
+                .padding(paddingValues)
+                .fillMaxSize()
+                .background(Color.White)
+        ) {
+            // Themes Section
+            Text(
+                "Themes",
+                modifier = Modifier.padding(16.dp),
+                fontWeight = FontWeight.Bold,
+                fontSize = 18.sp
+            )
+            StoreItemGrid(
+                items = storeItems.filter { it.type == ItemType.THEME },
+                userCoins = userCoins,
+                purchasedItems = purchasedItems,
+                onPurchase = { item ->
+                    if (userCoins >= item.price) {
+                        userCoins -= item.price
+                        purchasedItems += item.id
+                    }
+                }
+            )
+
+            // Avatar Skins Section
+            Text(
+                "Avatar Skins",
+                modifier = Modifier.padding(16.dp),
+                fontWeight = FontWeight.Bold,
+                fontSize = 18.sp
+            )
+            StoreItemGrid(
+                items = storeItems.filter { it.type == ItemType.AVATAR },
+                userCoins = userCoins,
+                purchasedItems = purchasedItems,
+                onPurchase = { item ->
+                    if (userCoins >= item.price) {
+                        userCoins -= item.price
+                        purchasedItems += item.id
+                    }
+                }
+            )
+        }
+    }
+}
+
+@Composable
+fun StoreItemGrid(
+    items: List<StoreItem>,
+    userCoins: Int,
+    purchasedItems: Set<String>,
+    onPurchase: (StoreItem) -> Unit
+) {
+    LazyVerticalGrid(
+        columns = GridCells.Fixed(2),
+        contentPadding = PaddingValues(8.dp)
+    ) {
+        items(items) { item ->
+            Card(
+                modifier = Modifier
+                    .padding(8.dp)
+                    .fillMaxWidth(),
+                elevation = CardDefaults.cardElevation(4.dp)
+            ) {
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    modifier = Modifier.padding(16.dp)
+                ) {
+                    Image(
+                        painter = painterResource(id = item.imageResId),
+                        contentDescription = item.name,
+                        modifier = Modifier
+                            .size(100.dp)
+                            .padding(bottom = 8.dp)
+                    )
+                    Text(
+                        text = item.name,
+                        fontWeight = FontWeight.Bold
+                    )
+                    Text(
+                        text = "${item.price} Coins",
+                        color = Color.Gray
+                    )
+
+                    if (item.id in purchasedItems) {
+                        Button(
+                            onClick = { /* Already purchased */ },
+                            enabled = false,
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = Color.Green,
+                                contentColor = Color.White
+                            )
+                        ) {
+                            Text("Owned")
+                        }
+                    } else {
+                        Button(
+                            onClick = { onPurchase(item) },
+                            enabled = userCoins >= item.price,
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = Color(0xFF228B22),
+                                contentColor = Color.White
+                            )
+                        ) {
+                            Text("Buy")
+                        }
+                    }
                 }
             }
         }
