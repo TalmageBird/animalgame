@@ -1,6 +1,8 @@
 package com.example.animalgame
 
+import android.content.Context
 import android.os.Bundle
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -44,7 +46,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
@@ -54,6 +55,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.Divider
 import androidx.compose.material3.MaterialTheme
 import androidx.navigation.NavType
@@ -67,6 +69,7 @@ import androidx.compose.material.icons.filled.Email
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.ShoppingCart
+import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.*
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.painter.Painter
@@ -80,7 +83,6 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.withStyle
-import androidx.compose.ui.tooling.preview.Preview
 
 import androidx.core.content.ContextCompat
 
@@ -241,7 +243,7 @@ fun AnimalGameGreetingScreen(navController: NavController) {
         Spacer(modifier = Modifier.height(24.dp))
 
         Button(
-            onClick = { navController.navigate("login") },
+            onClick = { backgroundTheme = R.drawable.safari_light_brown; navController.navigate("login") },
             modifier = Modifier
                 .fillMaxWidth()
                 .height(50.dp),
@@ -275,13 +277,13 @@ fun nameSubmission(navController: NavController) {
         Box(
             modifier = Modifier
                 .align(Alignment.TopStart)
-                .padding(top = 1.dp)
+                .padding(top = 12.dp)
         ) {
             IconButton(
                 onClick = { navController.popBackStack() },
                 modifier = Modifier
                     .padding(top = 16.dp)
-                    .size(48.dp)
+                    .size(60.dp)
             ) {
                 Icon(
                     imageVector = Icons.Default.ArrowBack,
@@ -444,12 +446,12 @@ fun howToPlay(navController: NavController) {
                 modifier = Modifier
                     .padding(top = 16.dp) // Padding for positioning the icon at the top-left
                     .align(Alignment.TopStart) // Align the back button to the top-left corner
-                    .size(48.dp) // Set a fixed size for the icon button
+                    .size(60.dp) // Set a fixed size for the icon button
             ) {
                 Icon(
                     imageVector = Icons.Default.ArrowBack,
                     contentDescription = "Back",
-                    tint = Color.Black
+
                 )
             }
         }
@@ -501,7 +503,7 @@ fun howToPlay(navController: NavController) {
 
                     """.trimIndent(),
                     fontSize = 22.sp,
-                    color = Color.DarkGray
+                    color = Color.Black
                 )
 
                 // Spacer between the rules and the image
@@ -534,6 +536,9 @@ fun AnimalGameNavHost(navController: NavHostController) {
         composable("login") { LoginScreen(navController) }
         composable("register") { RegisterScreen(navController) }
         composable("store") { StoreScreen(navController) }
+        composable("purchase_coins") {
+            PurchaseCoinsScreen(navController)
+        }
         composable(
             "game_play/{letter}/{numPlayers}",
             arguments = listOf(
@@ -993,9 +998,6 @@ fun GamePlay(navController: NavController, letter: Char, numPlayers: Int) {
     var feedbackMessage by remember { mutableStateOf<String?>(null) }
     var lastGuesses by remember { mutableStateOf(listOf<Pair<String, Boolean>>()) }
 
-    //val avatarOptions = listOf(
-        //R.drawable.tiger, R.drawable.parrot, R.drawable.monkey, R.drawable.elephant
-    //)
     Box(
     ) {
         // Background Image
@@ -1386,7 +1388,7 @@ fun LoginScreen(navController: NavController) {
 
             // Title
             Text(
-                text = "Login to Animal Game",
+                text = "Log in to Animal Game",
                 fontSize = 24.sp,
                 fontWeight = FontWeight.Bold,
                 color = Color.Black
@@ -1722,12 +1724,24 @@ fun StoreScreen(navController: NavController) {
                     }
                 },
                 actions = {
-                    Text(
-                        "Coins: $userCoins",
-                        modifier = Modifier.padding(end = 16.dp),
-                        fontWeight = FontWeight.Bold,
-                        fontSize = 16.sp
-                    )
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            "Coins: $userCoins",
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 16.sp
+                        )
+                        IconButton(
+                            onClick = { navController.navigate("purchase_coins") }
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Add,
+                                contentDescription = "Buy Coins",
+                                tint = Color(0xFFFFD700) // Gold color for the coin icon
+                            )
+                        }
+                    }
                 }
             )
         }
@@ -1740,7 +1754,6 @@ fun StoreScreen(navController: NavController) {
                 confirmButton = {
                     TextButton(
                         onClick = {
-
                             currentThemeBackground = theme.imageResId
                             backgroundTheme = theme.imageResId
                             showThemePopup = null
@@ -1769,77 +1782,109 @@ fun StoreScreen(navController: NavController) {
             )
         }
 
-
-        LazyColumn(
+        Column(
             modifier = Modifier
                 .padding(paddingValues)
                 .fillMaxSize()
         ) {
-            // Themes Section
-            item {
-
-                Box(
-                    modifier = Modifier
-                        .background(Color.LightGray, shape = RoundedCornerShape(4.dp))
-                        .padding(4.dp) // Padding outside the box
+            // Buy Coins Button
+            Button(
+                onClick = { navController.navigate("purchase_coins") },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = Color(0xFF4CAF50) // Green color for purchase button
+                )
+            ) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.Center,
+                    modifier = Modifier.padding(8.dp)
                 ) {
+                    Icon(
+                        imageVector = Icons.Default.ShoppingCart,
+                        contentDescription = "Purchase",
+                        tint = Color.White
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
                     Text(
-                        text = "Themes",
-                        modifier = Modifier.padding(16.dp), // Padding inside the box
+                        "Buy More Coins",
+                        color = Color.White,
                         fontWeight = FontWeight.Bold,
-                        fontSize = 18.sp
+                        fontSize = 16.sp
                     )
                 }
             }
-            item {
-                StoreItemGrid(
-                    items = storeItems.filter { it.type == ItemType.THEME },
-                    userCoins = userCoins,
-                    purchasedItems = purchasedItems,
-                    onPurchase = { item ->
-                        if (userCoins >= item.price) {
-                            userCoins -= item.price
-                            totalCoins = userCoins
-                            purchasedItems.add(item.id)
-                            ownedItems.add(item.id)
-                            showThemePopup = item
-                        }
-                    }
-                )
-            }
 
-            // Avatar Skins Section
-            item {
-                Box(
-                    modifier = Modifier
-                        .background(Color.LightGray, shape = RoundedCornerShape(4.dp))
-                        .padding(4.dp) // Padding outside the box
-                ) {
-                    Text(
-                        text = "Avatars",
-                        modifier = Modifier.padding(16.dp), // Padding inside the box
-                        fontWeight = FontWeight.Bold,
-                        fontSize = 18.sp
+            // Rest of the store content in a LazyColumn
+            LazyColumn(
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                // Themes Section
+                item {
+                    Box(
+                        modifier = Modifier
+                            .background(Color.LightGray, shape = RoundedCornerShape(4.dp))
+                            .padding(4.dp)
+                    ) {
+                        Text(
+                            text = "Themes",
+                            modifier = Modifier.padding(16.dp),
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 18.sp
+                        )
+                    }
+                }
+                item {
+                    StoreItemGrid(
+                        items = storeItems.filter { it.type == ItemType.THEME },
+                        userCoins = userCoins,
+                        purchasedItems = purchasedItems,
+                        onPurchase = { item ->
+                            if (userCoins >= item.price) {
+                                userCoins -= item.price
+                                totalCoins = userCoins
+                                purchasedItems.add(item.id)
+                                ownedItems.add(item.id)
+                                showThemePopup = item
+                            }
+                        }
+                    )
+                }
+
+                // Avatar Skins Section
+                item {
+                    Box(
+                        modifier = Modifier
+                            .background(Color.LightGray, shape = RoundedCornerShape(4.dp))
+                            .padding(4.dp)
+                    ) {
+                        Text(
+                            text = "Avatars",
+                            modifier = Modifier.padding(16.dp),
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 18.sp
+                        )
+                    }
+                }
+                item {
+                    StoreItemGrid(
+                        items = storeItems.filter { it.type == ItemType.AVATAR },
+                        userCoins = userCoins,
+                        purchasedItems = purchasedItems,
+                        onPurchase = { item ->
+                            if (userCoins >= item.price) {
+                                userCoins -= item.price
+                                totalCoins = userCoins
+                                purchasedItems.add(item.id)
+                                ownedItems.add(item.id)
+                                avatarOptions.add(item.imageResId)
+                            }
+                        }
                     )
                 }
             }
-            item {
-                StoreItemGrid(
-                    items = storeItems.filter { it.type == ItemType.AVATAR },
-                    userCoins = userCoins,
-                    purchasedItems = purchasedItems,
-                    onPurchase = { item ->
-                        if (userCoins >= item.price) {
-                            userCoins -= item.price
-                            totalCoins = userCoins
-                            purchasedItems.add(item.id)
-                            ownedItems.add(item.id)
-                            avatarOptions.add(item.imageResId)
-                        }
-                    }
-                )
-            }
-
         }
     }
 }
@@ -1935,6 +1980,252 @@ fun StoreItemCard(
         }
     }
 }
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun PurchaseCoinsScreen(navController: NavController) {
+    val coinPackages = listOf(
+        CoinPackage(100, "$0.99", "small_coins"),
+        CoinPackage(500, "$4.99", "medium_coins"),
+        CoinPackage(1000, "$9.99", "large_coins"),
+        CoinPackage(2500, "$19.99", "xlarge_coins")
+    )
+
+    var showPurchaseDialog by remember { mutableStateOf(false) }
+    var selectedPackage by remember { mutableStateOf<CoinPackage?>(null) }
+    var userCoins by remember { mutableStateOf(totalCoins) }
+    val context = LocalContext.current
+
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = {
+                    Text(
+                        "Purchase Coins",
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 20.sp
+                    )
+                },
+                navigationIcon = {
+                    IconButton(onClick = { navController.navigateUp() }) {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                            contentDescription = "Back"
+                        )
+                    }
+                },
+                actions = {
+                    Text(
+                        "Current Coins: $userCoins",
+                        modifier = Modifier.padding(end = 16.dp),
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 16.sp
+                    )
+                }
+            )
+        }
+    ) { paddingValues ->
+        if (showPurchaseDialog) {
+            selectedPackage?.let { pkg ->
+                AlertDialog(
+                    onDismissRequest = { showPurchaseDialog = false },
+                    title = { Text("Confirm Purchase") },
+                    text = {
+                        Text("Do you want to purchase ${pkg.amount} coins for ${pkg.price}?")
+                    },
+                    confirmButton = {
+                        TextButton(
+                            onClick = {
+                                userCoins += pkg.amount
+                                totalCoins += pkg.amount
+                                showPurchaseDialog = false
+                                val message = "Successfully purchased ${pkg.amount} coins!"
+                                context.makeToast(message)
+                            }
+                        ) {
+                            Text("Purchase")
+                        }
+                    },
+                    dismissButton = {
+                        TextButton(onClick = { showPurchaseDialog = false }) {
+                            Text("Cancel")
+                        }
+                    }
+                )
+            }
+        }
+
+        Image(
+            painter = painterResource(id = backgroundTheme),
+            contentDescription = "Theme Background",
+            modifier = Modifier.fillMaxSize(),
+            contentScale = ContentScale.Crop
+        )
+
+        Column(
+            modifier = Modifier
+                .padding(paddingValues)
+                .fillMaxSize()
+                .padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                colors = CardDefaults.cardColors(
+                    containerColor = Color(0xFFF5F5F5)
+                )
+            ) {
+                Column(
+                    modifier = Modifier.padding(16.dp)
+                ) {
+                    Text(
+                        "Buy Coins",
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 18.sp
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(
+                        "Purchase coins to unlock premium items in the store!",
+                        fontSize = 14.sp
+                    )
+                }
+            }
+
+            LazyColumn(
+                verticalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                items(coinPackages) { pkg ->
+                    CoinPackageItem(
+                        coinPackage = pkg,
+                        onClick = {
+                            selectedPackage = pkg
+                            showPurchaseDialog = true
+                        }
+                    )
+                }
+            }
+
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                colors = CardDefaults.cardColors(
+                    containerColor = Color(0xFFFFF3E0)
+                )
+            ) {
+                Row(
+                    modifier = Modifier
+                        .padding(16.dp)
+                        .fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Star,
+                        contentDescription = "Special Offer",
+                        tint = Color(0xFFFF9800),
+                        modifier = Modifier.size(40.dp)
+                    )
+                    Spacer(modifier = Modifier.width(16.dp))
+                    Column {
+                        Text(
+                            "Limited Time Offer!",
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 16.sp,
+                            color = Color(0xFFE65100)
+                        )
+                        Text(
+                            "Get 5000 coins for only $29.99 (50% off!)",
+                            fontSize = 14.sp
+                        )
+                    }
+                }
+                Button(
+                    onClick = {
+                        selectedPackage = CoinPackage(5000, "$29.99", "special_offer")
+                        showPurchaseDialog = true
+                    },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp, vertical = 8.dp),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = Color(0xFFFF9800)
+                    )
+                ) {
+                    Text("Get Special Offer")
+                }
+            }
+        }
+    }
+}
+
+fun Context.makeToast(message: String) {
+    Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
+}
+
+@Composable
+fun CoinPackageItem(coinPackage: CoinPackage, onClick: () -> Unit) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable(onClick = onClick),
+        elevation = CardDefaults.cardElevation(
+            defaultElevation = 2.dp
+        )
+    ) {
+        Row(
+            modifier = Modifier
+                .padding(16.dp)
+                .fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Box(
+                    modifier = Modifier
+                        .size(48.dp)
+                        .background(Color(0xFFFFD700), shape = CircleShape),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = coinPackage.amount.toString(),
+                        fontWeight = FontWeight.Bold,
+                        color = Color.White
+                    )
+                }
+
+                Spacer(modifier = Modifier.width(16.dp))
+
+                Column {
+                    Text(
+                        text = "${coinPackage.amount} Coins",
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 16.sp
+                    )
+                    Text(
+                        text = coinPackage.price,
+                        color = Color.Gray,
+                        fontSize = 14.sp
+                    )
+                }
+            }
+
+            Button(
+                onClick = onClick,
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = Color(0xFF4CAF50)
+                )
+            ) {
+                Text("Buy")
+            }
+        }
+    }
+}
+
+data class CoinPackage(
+    val amount: Int,
+    val price: String,
+    val id: String
+)
 
 
 class AnimalDictionary {
