@@ -1,8 +1,7 @@
-package com.example.animalgame
+ package com.example.animalgame
 
 import android.content.Context
 import android.os.Bundle
-import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -88,6 +87,16 @@ import androidx.core.content.ContextCompat
 
 import androidx.navigation.NavController
 import androidx.navigation.NavHostController
+import com.example.animalgame.network.LoginRequest
+import com.example.animalgame.network.LoginResponse
+import com.example.animalgame.network.RegisterRequest
+import com.example.animalgame.network.RetrofitClient
+import android.widget.Toast
+import retrofit2.Call
+import retrofit2.Callback
+import retrofit2.Response
+import com.example.animalgame.BuildConfig
+import android.os.StrictMode
 
 var name = "Guest"
 var totalCoins = 500
@@ -96,10 +105,20 @@ val avatarOptions = mutableListOf(
 )
 var backgroundTheme = R.drawable.safari_light_brown
 var ownedItems = mutableSetOf<String>()
+var isLoading = false
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        //For testing tricky network purposes
+        if (BuildConfig.DEBUG) {
+            StrictMode.setThreadPolicy(
+                StrictMode.ThreadPolicy.Builder()
+                    .permitAll()
+                    .build()
+            )
+        }
+
         enableEdgeToEdge()
         setContent {
             val navController = rememberNavController()
@@ -1355,6 +1374,33 @@ fun LoginScreen(navController: NavController) {
     val passwordVisible by remember { mutableStateOf(false) }
     var errorMessage by remember { mutableStateOf<String?>(null) }
 
+    fun loginUser() {
+        isLoading = true
+        val request = LoginRequest(user, password)
+        RetrofitClient.instance.login(request).enqueue(object : Callback<LoginResponse> {
+            override fun onResponse(call: Call<LoginResponse>, response: Response<LoginResponse>) {
+                isLoading = false
+                if (response.isSuccessful) {
+                    val loginResponse = response.body()
+                    if (loginResponse != null) {
+                        // Navigate to main screen after successful login
+                        name = loginResponse.username
+                        navController.navigate("greeting")
+                    } else {
+                        errorMessage = "Invalid response from server"
+                    }
+                } else {
+                    errorMessage = "Invalid username or password"
+                }
+            }
+
+            override fun onFailure(call: Call<LoginResponse>, t: Throwable) {
+                isLoading = false
+                errorMessage = "Network error: ${t.localizedMessage}"
+            }
+        })
+    }
+
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -1446,8 +1492,7 @@ fun LoginScreen(navController: NavController) {
                     if (user.isBlank() || password.isBlank()) {
                         errorMessage = "Please fill in all fields"
                     } else {
-                        name = user
-                        navController.navigate("greeting") {}
+                        loginUser()
                     }
                 },
                 modifier = Modifier
@@ -1505,6 +1550,35 @@ fun RegisterScreen(navController: NavController) {
     val passwordVisible by remember { mutableStateOf(false) }
     val confirmPasswordVisible by remember { mutableStateOf(false) }
     var errorMessage by remember { mutableStateOf<String?>(null) }
+
+    fun registerUser() {
+        isLoading = true
+        val request = RegisterRequest(username, email, password, confirmPassword)
+        print("From RegisterScreen:")
+        print(request)
+        RetrofitClient.instance.register(request).enqueue(object : Callback<LoginResponse> {
+            override fun onResponse(call: Call<LoginResponse>, response: Response<LoginResponse>) {
+                isLoading = false
+                if (response.isSuccessful) {
+                    val loginResponse = response.body()
+                    if (loginResponse != null) {
+                        // Navigate to main screen after successful login
+                        name = loginResponse.username
+                        navController.navigate("greeting")
+                    } else {
+                        errorMessage = "Invalid response from server"
+                    }
+                } else {
+                    errorMessage = "Registration failed: CODE: ${response.code()} MSG: ${response.message()} TOTAL: $response"
+                }
+            }
+
+            override fun onFailure(call: Call<LoginResponse>, t: Throwable) {
+                isLoading = false
+                errorMessage = "Network error: ${t.localizedMessage}"
+            }
+        })
+    }
 
     Box(
         modifier = Modifier
@@ -1632,9 +1706,7 @@ fun RegisterScreen(navController: NavController) {
                             errorMessage = "Passwords do not match"
                         }
                         else -> {
-                            name = username
-                            navController.navigate("greeting") {
-                            }
+                            registerUser()
                         }
                     }
                 },
